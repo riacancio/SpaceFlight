@@ -1,4 +1,4 @@
-from graphics import *
+from graphics5 import *
 
 # Function to display the outro screen
 def show_outro(score, game_window):
