@@ -1,4 +1,4 @@
-from graphics import *
+from graphics5 import *
 import time
 import random
 
