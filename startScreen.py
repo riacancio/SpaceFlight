@@ -12,6 +12,7 @@ def screenTransition(x1,y1,x2,y2):
     if (x1 < 500) and (y1 < 500) and (x2 < 500) and (y2 < 500):
         screenTransition((x1+5),(y1+5),(x2+10),(y2+10))
     for i in range(200):
+        update(2000)
         screenTransitionSquare.undraw()
 
 def gameStart():
