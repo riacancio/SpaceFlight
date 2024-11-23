@@ -1,366 +1,277 @@
-'''from graphics5 import *
+#Python Co-Design Project, Group 1
+#Space Flight, a Space Invaders-esque game
+#Riya Cancio
+#CJ Gordon
+#Isabella Aikey
+#Logan Marko
+
+
+from graphics5 import *
 import time
 import random
 
-# Setup Game Window
-win_width, win_height = 288, 512
-win = GraphWin("AeroBlasters", win_width, win_height)
-win.setBackground("black")
 
-# Colors
-WHITE = "white"
-BLUE = color_rgb(30, 144, 255)
-RED = "red"
-GREEN = "green"
+# load in the assets
+playerShipImage = "Assets/mediumPlayer.png"
+enemyShipImage = "Assets/mediumEnemy.png"
+logoImage = "Assets/sfLogo.png"
 
-# Load Images
-player_img = "player.png"    # Image for player
-enemy_img = "enemy.png"      # Image for enemy
-bullet_img = "bullet.png"    # Image for bullet
 
-# Classes for Game Elements
+# define the window size
+windowWidth, windowHeight = 500, 800
 
+
+# define the start screen
+def startScreen(win):
+    win.setBackground("black")
+    logo = Image(Point(windowWidth // 2, windowHeight // 3), logoImage)
+    logo.draw(win)
+    playMessage = Text(Point(windowWidth // 2, windowHeight // 2 + 50), "Click to Play")
+    playMessage.setSize(20)
+    playMessage.setTextColor("white")
+    playMessage.draw(win)
+    win.getMouse()
+    logo.undraw()
+    playMessage.undraw()
+
+# define the player, enemies, and their respective laser bullets
 class Player:
-    def __init__(self, x, y):
-        self.shape = Image(Point(400, 300), "player1.png")  # Replacing rectangle with player image
-        self.shape.draw(win)
-        self.health = 100
-        self.fuel = 100
-        self.powerup = 0
+    def __init__(self, win, x, y):
         self.x = x
         self.y = y
-
-    def move(self, dx, dy):
-        self.shape.move(dx, dy)
-        self.x += dx
-        self.y += dy
-
-    def shoot(self):
-        # Create bullet(s) at the player's current position
-        return Bullet(self.x, self.y - 15)  # Shoot bullet upwards
-
-    def update_health_fuel(self):
-        self.health -= 1  # Example health decrement
-        self.fuel -= 0.1  # Example fuel decrement
-
-    def is_alive(self):
-        return self.health > 0 and self.fuel > 0
-
-class Enemy:
-    def __init__(self, x, y, type):
-        self.shape = Image(Point(x, y), enemy_img)  # Replacing rectangle with enemy image
-        self.shape.draw(win)
-        self.x = x
-        self.y = y
-        self.health = 100
-        self.type = type
-
-    def move(self):
-        self.shape.move(0, 5)  # Move enemy downward
-        self.y += 5
-
-    def is_off_screen(self):
-        return self.y > win_height
-
-class Bullet:
-    def __init__(self, x, y):
-        self.shape = Image(Point(x, y), bullet_img)  # Replacing rectangle with bullet image
-        self.shape.draw(win)
-        self.x = x
-        self.y = y
-
-    def move(self):
-        self.shape.move(0, -10)  # Move bullet upward
-        self.y -= 10
-
-    def is_off_screen(self):
-        return self.y < 0
-
-def detect_collision(obj1, obj2):
-    # Simplified collision detection based on object positions
-    dx = abs(obj1.x - obj2.x)
-    dy = abs(obj1.y - obj2.y)
-    return dx < 15 and dy < 15
-
-def update_health_fuel_bar(player):
-    # Health Bar
-    health_bar = Rectangle(Point(20, 20), Point(20 + player.health, 30))
-    health_bar.setFill(GREEN)
-    health_bar.draw(win)
-    # Fuel Bar
-    fuel_bar = Rectangle(Point(20, 35), Point(20 + int(player.fuel), 45))
-    fuel_bar.setFill(RED if player.fuel < 40 else GREEN)
-    fuel_bar.draw(win)
-
-# Main Game Loop
-
-player = Player(win_width // 2, win_height - 50)
-enemies = []
-bullets = []
-
-score = 0
-running = True
-
-while running:
-    # Handle keyboard input
-    key = win.checkKey()
-    if key == "Left" and player.x > 20:
-        player.move(-5, 0)
-    elif key == "Right" and player.x < win_width - 20:
-        player.move(5, 0)
-    elif key == "space":
-        bullets.append(player.shoot())
-
-    # Generate new enemies periodically
-    if random.randint(0, 100) < 5:
-        enemy = Enemy(random.randint(10, win_width - 10), -50, random.randint(1, 3))
-        enemies.append(enemy)
-
-    # Update and move enemies
-    for enemy in enemies[:]:
-        enemy.move()
-        if enemy.is_off_screen():
-            enemy.shape.undraw()
-            enemies.remove(enemy)
-        elif detect_collision(player, enemy):
-            player.health -= 10
-            enemy.shape.undraw()
-            enemies.remove(enemy)
-
-    # Update and move bullets
-    for bullet in bullets[:]:
-        bullet.move()
-        if bullet.is_off_screen():
-            bullet.shape.undraw()
-            bullets.remove(bullet)
-        else:
-            for enemy in enemies[:]:
-                if detect_collision(bullet, enemy):
-                    score += 10
-                    enemy.shape.undraw()
-                    enemies.remove(enemy)
-                    bullet.shape.undraw()
-                    bullets.remove(bullet)
-                    break
-
-    # Update player's health and fuel
-    player.update_health_fuel()
-
-    # Draw the health and fuel bars
-    update_health_fuel_bar(player)
-
-    # Check game over condition
-    if not player.is_alive():
-        game_over_text = Text(Point(win_width // 2, win_height // 2), "GAME OVER")
-        game_over_text.setSize(24)
-        game_over_text.setTextColor(RED)
-        game_over_text.draw(win)
-        running = False
-
-    time.sleep(0.016)  # 60 FPS delay
-
-win.close()'''
-
-
-from graphics import *
-import random
-import time
-
-# Screen dimensions
-WIDTH, HEIGHT = 500, 500
-
-# Load assets
-PLAYER_IMAGE = "Assets/player1.png"
-ENEMY_IMAGE = "Assets/player2.png"
-BULLET_IMAGE = "Assets/Bullets/1.png"
-ENEMY_BULLET_IMAGE = "Assets/Bullets/2.png"
-LOGO_IMAGE = "Assets/image.png"
-
-# Classes for game objects
-class Player:
-    def __init__(self, x, y, win):
-        self.x = x
-        self.y = y
-        self.health = 100
-        self.speed = 15
-        self.win = win
-        self.image = Image(Point(self.x, self.y), PLAYER_IMAGE)
+        self.image = Image(Point(self.x, self.y), playerShipImage)
         self.image.draw(win)
+        self.health = 100
+        self.speed = 5
 
     def draw(self):
-        self.image.move(0, 0)  # Keeps image intact without redrawing
+        self.image.move(0, 0)  # keeps the image intact without redrawing
 
     def move(self, key):
         if key == "Left" and self.x > 20:
             self.image.move(-self.speed, 0)
             self.x -= self.speed
-        elif key == "Right" and self.x < WIDTH - 20:
+        elif key == "Right" and self.x < windowWidth - 20:
             self.image.move(self.speed, 0)
             self.x += self.speed
+        
+    def shoot(self, win):
+        return laserBullet(win, self.x, self.y - 10)
 
-    def shoot(self):
-        return Bullet(self.x, self.y - 20, BULLET_IMAGE, -10, self.win)
+    def isAlive(self):
+        return self.health > 0
+
+    def destroy(self):
+        self.image.undraw()
+
 
 class Enemy:
-    def __init__(self, x, y, win):
+    def __init__(self, win, x, y):
         self.x = x
         self.y = y
-        self.speed = 3
+        self.speed = 1
         self.win = win
-        self.image = Image(Point(self.x, self.y), ENEMY_IMAGE)
+        self.image = Image(Point(self.x, self.y), enemyShipImage)
         self.image.draw(win)
 
     def move(self):
         self.y += self.speed
         self.image.move(0, self.speed)
 
-    def shoot(self):
-        return Bullet(self.x, self.y + 20, ENEMY_BULLET_IMAGE, 5, self.win)
+    def shoot(self, win):
+        return enemyLaserBullet(win, self.x, self.y + 10)
 
-class Bullet:
-    def __init__(self, x, y, image_file, speed, win):
+    def destroy(self):
+        self.image.undraw()
+
+    def isOffScreen(self):
+        return self.y > windowHeight
+
+
+class laserBullet:
+    def __init__(self, win, x, y):
+        self.shape = Rectangle(Point(x - 10, y - 10), Point(x + 10, y + 20))
+        self.shape.setFill("white")
+        self.shape.draw(win)
         self.x = x
         self.y = y
-        self.speed = speed
-        self.win = win
-        self.image = Image(Point(self.x, self.y), image_file)
-        self.image.draw(win)
 
-    def move(self):
-        self.y += self.speed
-        self.image.move(0, self.speed)
+    def playerMove(self):
+        self.shape.move(0, -10)  # move player's bullets upward
+        self.y -= 5
 
-# Start screen
-def start_screen(win):
-    win.setBackground("black")
-    logo = Image(Point(WIDTH // 2, HEIGHT // 3), LOGO_IMAGE)
-    logo.draw(win)
-    message = Text(Point(WIDTH // 2, HEIGHT // 2 + 50), "Tap to Play")
-    message.setSize(20)
-    message.setTextColor("white")
-    message.draw(win)
+    def isOffScreen(self):
+        return self.y < 0
 
-    win.getMouse()
-    logo.undraw()
-    message.undraw()
 
-# Outro screen
-def outro_screen(win, score):
-    win.setBackground("black")
-    score_text = Text(Point(WIDTH // 2, HEIGHT // 3), f"Your Score: {score}")
-    score_text.setSize(20)
-    score_text.setTextColor("white")
-    score_text.draw(win)
+class enemyLaserBullet:
+    def __init__(self, win, x, y):
+        self.shape = Rectangle(Point(x - 10, y - 10), Point(x + 10, y + 20))
+        self.shape.setFill("red")
+        self.shape.draw(win)
+        self.x = x
+        self.y = y
 
-    restart_button = Rectangle(Point(WIDTH // 2 - 70, HEIGHT // 2), Point(WIDTH // 2 + 70, HEIGHT // 2 + 40))
-    restart_button.setFill("green")
-    restart_button.draw(win)
-    restart_label = Text(restart_button.getCenter(), "Restart")
-    restart_label.setSize(16)
-    restart_label.draw(win)
+    def enemyMove(self): # move enemy's bullets downward
+        self.shape.move(0, 10) 
+        self.y += 10
 
-    home_button = Rectangle(Point(WIDTH // 2 - 70, HEIGHT // 2 + 60), Point(WIDTH // 2 + 70, HEIGHT // 2 + 100))
-    home_button.setFill("blue")
-    home_button.draw(win)
-    home_label = Text(home_button.getCenter(), "Home")
-    home_label.setSize(16)
-    home_label.draw(win)
+    def isOffScreen(self):
+        return self.y < 0
 
-    while True:
-        click = win.getMouse()
-        if restart_button.getP1().getX() <= click.getX() <= restart_button.getP2().getX() and \
-           restart_button.getP1().getY() <= click.getY() <= restart_button.getP2().getY():
-            score_text.undraw()
-            restart_button.undraw()
-            restart_label.undraw()
-            home_button.undraw()
-            home_label.undraw()
-            return "restart"
 
-        if home_button.getP1().getX() <= click.getX() <= home_button.getP2().getX() and \
-           home_button.getP1().getY() <= click.getY() <= home_button.getP2().getY():
-            score_text.undraw()
-            restart_button.undraw()
-            restart_label.undraw()
-            home_button.undraw()
-            home_label.undraw()
-            return "home"
+def detectCollision(obj1, obj2):
+    # simplified collision detection based on object positions
+    dx = abs(obj1.x - obj2.x)
+    dy = abs(obj1.y - obj2.y)
+    return dx < 15 and dy < 15
 
-# Game loop
-def game_loop(win):
-    player = Player(WIDTH // 2, HEIGHT - 40, win)
+
+def gameLoop(win):
+    global player
+    player = Player(win, windowWidth // 2, windowHeight - 50)
+    global laserBullets 
+    laserBullets = []
+    global enemies
     enemies = []
-    bullets = []
-    enemy_bullets = []
+    global enemyLaserBullets
+    enemyLaserBullets = []
+
+    
+
     score = 0
     running = True
 
     while running:
+        # handle keyboard input
         key = win.checkKey()
-
         if key == "BackSpace":
             running = False
-
-        if key in ["Left", "Right"]:
+        if key == "Left" and player.x > 20:
             player.move(key)
+        elif key == "Right" and player.x < windowWidth - 20:
+            player.move(key)
+        elif key == "space":
+            laserBullets.append(player.shoot(win)) 
 
-        player.draw()
+        # spawns enemies with a spawn cap
+        if len(enemies) < 3:
+            if random.randint(0, 100) < 3:
+                enemies.append(Enemy(win, random.randint(20, windowWidth - 20), 20))
 
-        # Spawn enemies
-        if random.randint(0, 100) < 3:
-            enemies.append(Enemy(random.randint(20, WIDTH - 20), 20, win))
 
-        # Update and draw enemies
         for enemy in enemies[:]:
             enemy.move()
-
-            if random.randint(0, 100) < 3:
-                enemy_bullets.append(enemy.shoot())
-
-            if enemy.y > HEIGHT:
+            if enemy.isOffScreen():
+                enemy.destroy()
                 enemies.remove(enemy)
+            if detectCollision(player, enemy):
+                player.health -= 10
+                enemy.destroy()
+                enemies.remove(enemy)
+            if random.randint(0, 250) < 2:
+                enemyLaserBullets.append(enemy.shoot(win))
+        
+        # update and move all bullets
 
-        # Update and draw bullets
-        for bullet in bullets[:]:
-            bullet.move()
+        for laserBullet in laserBullets[:]:
+            laserBullet.playerMove()
+            if laserBullet.isOffScreen():
+                laserBullet.shape.undraw()
+                laserBullets.remove(laserBullet)
+            else:
+                for enemy in enemies[:]:
+                    if abs(laserBullet.x - enemy.x) < 65 and abs(laserBullet.y - enemy.y) < 65:
+                        enemy.destroy()
+                        enemies.remove(enemy)
+                        laserBullet.shape.undraw()
+                        laserBullets.remove(laserBullet)
+                        score += 10
+                        break
+        
+        for enemyLaserBullet in enemyLaserBullets[:]:
+            enemyLaserBullet.enemyMove()
+            if abs(enemyLaserBullet.x - player.x) < 30 and abs(enemyLaserBullet.y - player.y) < 30:
+                player.health -= 100
+            if enemyLaserBullet.isOffScreen():
+                enemyLaserBullet.shape.undraw()
+                enemyLaserBullets.remove(enemyLaserBullet)
 
-            for enemy in enemies[:]:
-                if abs(bullet.x - enemy.x) < 20 and abs(bullet.y - enemy.y) < 20:
-                    enemies.remove(enemy)
-                    bullets.remove(bullet)
-                    score += 10
-                    break
+        # check game over condition
+        if not player.isAlive():
+            return score
 
-            if bullet.y < 0:
-                bullets.remove(bullet)
+    time.sleep(0.016)  # 60 FPS delay
 
-        for e_bullet in enemy_bullets[:]:
-            e_bullet.move()
+def outroScreen(win, score):
+    win.setBackground("black")
+    scoreText = Text(Point(windowWidth // 2, windowHeight // 3), f"Your Score: {score}")
+    scoreText.setSize(20)
+    scoreText.setTextColor("white")
+    scoreText.draw(win)
 
-            if abs(e_bullet.x - player.x) < 20 and abs(e_bullet.y - player.y) < 20:
-                running = False
-                break
+    homeButton = Rectangle(Point(windowWidth // 2 - 70, windowHeight // 2), Point(windowWidth // 2 + 70, windowHeight // 2 + 40))
+    homeButton.setFill("green")
+    homeButton.draw(win)
+    homeLabel = Text(homeButton.getCenter(), "Home")
+    homeLabel.setSize(16)
+    homeLabel.draw(win)
 
-            if e_bullet.y > HEIGHT:
-                enemy_bullets.remove(e_bullet)
+    closeButton = Rectangle(Point(windowWidth // 2 - 70, windowHeight // 2 + 60), Point(windowWidth // 2 + 70, windowHeight // 2 + 100))
+    closeButton.setFill("blue")
+    closeButton.draw(win)
+    closeLabel = Text(closeButton.getCenter(), "Close")
+    closeLabel.setSize(16)
+    closeLabel.draw(win)
 
-        time.sleep(0.02)
-
-    return score
-
-# Main function
-def main():
-    win = GraphWin("Aero Blasters", WIDTH, HEIGHT)
     while True:
-        start_screen(win)
-        score = game_loop(win)
-        action = outro_screen(win, score)
-        if action == "home":
-            continue
-        elif action == "restart":
-            pass
+        click = win.getMouse()
+        if (closeButton.getP1().getX() <= click.getX() <= closeButton.getP2().getX()) and \
+           (closeButton.getP1().getY() <= click.getY() <= closeButton.getP2().getY()):
+            scoreText.undraw()
+            closeButton.undraw()
+            closeLabel.undraw()
+            homeButton.undraw()
+            homeLabel.undraw()
+            player.destroy()
+            for enemy in enemies[:]:
+                enemy.destroy()
+            for laserBullet in laserBullets[:]:
+                laserBullet.shape.undraw()
+            for enemyLaserBullet in enemyLaserBullets[:]:
+                enemyLaserBullet.shape.undraw()
+            return "close"
+        
+        
+        if (homeButton.getP1().getX() <= click.getX() <= homeButton.getP2().getX()) and \
+           (homeButton.getP1().getY() <= click.getY() <= homeButton.getP2().getY()):
+            scoreText.undraw()
+            closeButton.undraw()
+            closeLabel.undraw()
+            homeButton.undraw()
+            homeLabel.undraw()
+            player.destroy()
+            for enemy in enemies[:]:
+                enemy.destroy()
+            for laserBullet in laserBullets[:]:
+                laserBullet.shape.undraw()
+            for enemyLaserBullet in enemyLaserBullets[:]:
+                enemyLaserBullet.shape.undraw()
+            return "home"
 
-    win.close()
+
+def main():
+    gameWindow = GraphWin("Space Flight", windowWidth, windowHeight)
+    while True:
+        startScreen(gameWindow)
+        finalScore = gameLoop(gameWindow)
+        playAgain = outroScreen(gameWindow, finalScore)
+        if playAgain == "close":
+            gameWindow.close()
+            break
+        elif playAgain == "home":
+            continue
+
 
 if __name__ == "__main__":
     main()
