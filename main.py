@@ -1,6 +1,6 @@
 #Python Co-Design Project, Group 1
 #Space Flight, a Space Invaders-esque game
-#Riya Cancio
+#Riya Bhurki
 #CJ Gordon
 #Isabella Aikey
 #Logan Marko
@@ -18,21 +18,39 @@ logoImage = "Assets/sfLogo.png"
 
 
 # define the window size
-windowWidth, windowHeight = 500, 800
-
+windowWidth, windowHeight = 400, 600
 
 # define the start screen
 def startScreen(win):
     win.setBackground("black")
+    
     logo = Image(Point(windowWidth // 2, windowHeight // 3), logoImage)
     logo.draw(win)
+    
+    # Button for clicking to play
+    playButton = Rectangle(Point(windowWidth // 2 - 100, windowHeight // 2 + 20), 
+                           Point(windowWidth // 2 + 100, windowHeight // 2 + 80))
+    playButton.setFill("blue")
+    playButton.draw(win)
+    
     playMessage = Text(Point(windowWidth // 2, windowHeight // 2 + 50), "Click to Play")
     playMessage.setSize(20)
     playMessage.setTextColor("white")
     playMessage.draw(win)
-    win.getMouse()
-    logo.undraw()
+    
+    # Wait for the user to click the button
+    while True:
+        click = win.getMouse()
+        # Check if the click is inside the button
+        if (playButton.getP1().getX() <= click.getX() <= playButton.getP2().getX()) and \
+           (playButton.getP1().getY() <= click.getY() <= playButton.getP2().getY()):
+            break  # Proceed to the next screen when clicked
+
+    # Remove the button and message after clicking
+    playButton.undraw()
     playMessage.undraw()
+    logo.undraw()
+
 
 # define the player, enemies, and their respective laser bullets
 class Player:
@@ -137,10 +155,12 @@ def gameLoop(win):
     global enemyLaserBullets
     enemyLaserBullets = []
 
-    
-
     score = 0
     running = True
+
+    # Initialize the last enemy spawn time
+    last_enemy_spawn_time = time.time()  # This tracks when the last enemy was spawned
+    spawn_interval = 2  # Time interval for spawning enemies (2 seconds)
 
     while running:
         # handle keyboard input
@@ -154,11 +174,11 @@ def gameLoop(win):
         elif key == "space":
             laserBullets.append(player.shoot(win)) 
 
-        # spawns enemies with a spawn cap
-        if len(enemies) < 3:
-            if random.randint(0, 100) < 3:
-                enemies.append(Enemy(win, random.randint(20, windowWidth - 20), 20))
-
+        # Spawns enemies with a delay of 2 seconds
+        current_time = time.time()  # Get the current time
+        if len(enemies) < 3 and (current_time - last_enemy_spawn_time > spawn_interval):
+            enemies.append(Enemy(win, random.randint(20, windowWidth - 20), 20))
+            last_enemy_spawn_time = current_time  # Reset the timer after spawning an enemy
 
         for enemy in enemies[:]:
             enemy.move()
@@ -173,7 +193,6 @@ def gameLoop(win):
                 enemyLaserBullets.append(enemy.shoot(win))
         
         # update and move all bullets
-
         for laserBullet in laserBullets[:]:
             laserBullet.playerMove()
             if laserBullet.isOffScreen():
@@ -201,7 +220,8 @@ def gameLoop(win):
         if not player.isAlive():
             return score
 
-    time.sleep(0.016)  # 60 FPS delay
+        time.sleep(0.016)  # 60 FPS delay
+
 
 def outroScreen(win, score):
     win.setBackground("black")
